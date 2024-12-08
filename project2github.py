@@ -20,9 +20,23 @@ def check_git_installed():
 def init_git_repo(directory):
     """初始化Git仓库"""
     try:
-        subprocess.run(['git', 'init'], cwd=directory, check=True, capture_output=True)
-        subprocess.run(['git', 'add', '.'], cwd=directory, check=True, capture_output=True)
-        subprocess.run(['git', 'commit', '-m', 'Initial commit'], cwd=directory, check=True, capture_output=True)
+        # 检查是否已经是Git仓库
+        result = subprocess.run(['git', 'rev-parse', '--is-inside-work-tree'], 
+                              cwd=directory, capture_output=True, text=True)
+        is_git_repo = result.returncode == 0
+
+        if not is_git_repo:
+            subprocess.run(['git', 'init'], cwd=directory, check=True, capture_output=True)
+        
+        # 检查是否有未暂存的更改
+        status = subprocess.run(['git', 'status', '--porcelain'], 
+                              cwd=directory, capture_output=True, text=True)
+        
+        if status.stdout.strip():
+            subprocess.run(['git', 'add', '.'], cwd=directory, check=True, capture_output=True)
+            subprocess.run(['git', 'commit', '-m', 'Initial commit'], 
+                         cwd=directory, check=True, capture_output=True)
+        
         return True
     except subprocess.CalledProcessError as e:
         print(f"Git操作失败: {e}")
