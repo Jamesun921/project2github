@@ -55,6 +55,34 @@ python project2github.py /path/to/your/project --name custom_repo_name
 - `--name`: GitHub仓库名称（可选，默认使用目录名）
 - `--private`: 创建私有仓库（可选，默认为公开仓库）
 
+## MCP Server Integration
+
+This project now includes an MCP (Model Context Protocol) server implementation, allowing AI systems to interact with it via stdio.
+
+### MCP Server Usage
+
+1. Start the MCP server:
+```bash
+python server.py
+```
+
+2. The server supports the following MCP operations:
+   - `create_repo`: Create a new GitHub repository
+   
+   Note: The `list_repos` and `delete_repo` operations are not yet implemented
+
+3. Example MCP request:
+```json
+{
+  "operation": "create_repo",
+  "params": {
+    "directory": "/path/to/project",
+    "name": "my-repo",
+    "private": true
+  }
+}
+```
+
 ## 许可证
 
 MIT
