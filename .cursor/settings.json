@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+        "github-project-manager": {
+            "command": "python",
+            "args": ["D:/DEV/MyProjs/project2github/project2github_mcp.py"],
+            "env": {
+                "PYTHONIOENCODING": "utf-8"
+            }
+        }
+    }
+} 

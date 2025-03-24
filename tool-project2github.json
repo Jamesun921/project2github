@@ -1,0 +1,42 @@
+{
+    "name": "project2github",
+    "command": ["python", "project2github_mcp.py"],
+    "stdio": true,
+    "capabilities": {
+        "check_git": {
+            "type": "command",
+            "params": {}
+        },
+        "init_repo": {
+            "type": "command",
+            "params": {
+                "directory": {
+                    "type": "string",
+                    "description": "项目目录路径"
+                }
+            }
+        },
+        "create_repo": {
+            "type": "command",
+            "params": {
+                "token": {
+                    "type": "string",
+                    "description": "GitHub Token"
+                },
+                "directory": {
+                    "type": "string",
+                    "description": "项目目录路径"
+                },
+                "repo_name": {
+                    "type": "string",
+                    "description": "GitHub仓库名称"
+                },
+                "private": {
+                    "type": "boolean",
+                    "description": "是否为私有仓库",
+                    "default": false
+                }
+            }
+        }
+    }
+} 
