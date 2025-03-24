@@ -1,88 +1,104 @@
-# Project2Github
+# Project2GitHub
 
-一键将本地目录创建为GitHub仓库的工具。支持Windows、Linux和macOS平台。
+A powerful tool for automatically uploading local projects to GitHub. Supports both command-line interface and MCP (Model Context Protocol) integration with Cursor IDE.
 
-## 功能特点
+## Features
 
-- 自动初始化本地Git仓库
-- 自动创建GitHub远程仓库
-- 自动推送代码到GitHub
-- 支持创建私有仓库
-- 跨平台支持
+- 🚀 One-click project upload to GitHub
+- 🔒 Support for private repositories
+- 🔄 Automatic Git initialization and configuration
+- 🛠️ MCP integration with Cursor IDE
+- 📝 Detailed logging and error handling
+- 🌐 Environment variable based configuration
 
-## 安装要求
+## Prerequisites
 
-- Python 3.8+
-- Git
+- Python 3.6+
+- Git installed and configured
+- GitHub account and personal access token
+- Cursor IDE (for MCP integration)
 
-## 安装依赖
+## Installation
 
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/project2github.git
+cd project2github
+```
+
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-## 配置
-
-1. 创建GitHub个人访问令牌（Personal Access Token）:
-   - 访问 GitHub Settings -> Developer settings -> Personal access tokens
-   - 生成新token，确保勾选`repo`权限
-
-2. 创建`.env`文件，添加你的GitHub Token：
-```
-GITHUB_TOKEN=your_github_token_here
-```
-
-## 使用方法
-
-基本用法：
+3. Set up your GitHub token:
+Create a `.env` file in the project root:
 ```bash
-python project2github.py /path/to/your/project
+GITHUB_TOKEN=your_github_personal_access_token
 ```
 
-创建私有仓库：
+## Usage
+
+### Command Line Interface
+
+Upload a project directory to GitHub:
 ```bash
-python project2github.py /path/to/your/project --private
+python project2github.py /path/to/your/project --name optional-repo-name --private
 ```
 
-指定仓库名称：
-```bash
-python project2github.py /path/to/your/project --name custom_repo_name
-```
+Options:
+- `directory`: Path to the local directory to upload (required)
+- `--name`: Custom repository name (optional, defaults to directory name)
+- `--private`: Create a private repository (optional, defaults to true)
 
-## 参数说明
-
-- `directory`: 要上传的本地目录路径（必需）
-- `--name`: GitHub仓库名称（可选，默认使用目录名）
-- `--private`: 创建私有仓库（可选，默认为公开仓库）
-
-## MCP Server Integration
-
-This project now includes an MCP (Model Context Protocol) server implementation, allowing AI systems to interact with it via stdio.
-
-### MCP Server Usage
+### Cursor IDE Integration (MCP)
 
 1. Start the MCP server:
 ```bash
-python server.py
+python project2github.py --mcp
+# or use the provided batch file:
+start_mcp_server.bat
 ```
 
-2. The server supports the following MCP operations:
-   - `create_repo`: Create a new GitHub repository
-   
-   Note: The `list_repos` and `delete_repo` operations are not yet implemented
+2. Configure in Cursor IDE:
+   - Add MCP server with command: `python path/to/project2github.py --mcp`
+   - Server name: `github-project-manager`
 
-3. Example MCP request:
+3. Use through Cursor's interface with the following parameters:
 ```json
 {
-  "operation": "create_repo",
-  "params": {
-    "directory": "/path/to/project",
-    "name": "my-repo",
+    "directory": "/path/to/your/project",
+    "name": "optional-repo-name",
     "private": true
-  }
 }
 ```
 
-## 许可证
+## Logging
 
-MIT
+The tool maintains detailed logs in `github_mcp.log` for troubleshooting and monitoring.
+
+## Error Handling
+
+- Validates Git installation
+- Checks for valid GitHub token
+- Verifies directory existence
+- Handles Git initialization and push errors
+- Provides detailed error messages and logging
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Built with [PyGithub](https://github.com/PyGithub/PyGithub)
+- Integrated with [Cursor IDE](https://cursor.sh/) using MCP
+- Inspired by the need for streamlined GitHub project initialization

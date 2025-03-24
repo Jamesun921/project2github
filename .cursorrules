@@ -1,0 +1,25 @@
+{
+    "language": "en",
+    "mcpServers": {
+        "github-project-manager": {
+            "command": "python",
+            "args": ["project2github.py", "--mcp"],
+            "cwd": "${workspaceRoot}",
+            "description": "GitHub Project Manager MCP Server"
+        }
+    },
+    "formatting": {
+        "python": {
+            "docstring": "google",
+            "quotes": "double",
+            "lineLength": 100
+        }
+    },
+    "linting": {
+        "python": {
+            "enabled": true,
+            "pylint": true,
+            "flake8": true
+        }
+    }
+} 
