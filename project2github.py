@@ -11,6 +11,7 @@ from mcp.server.fastmcp import FastMCP, Context
 import json
 import logging
 import io
+import time
 
 # Configure logging
 logging.basicConfig(
@@ -135,7 +136,10 @@ def upload_to_github(ctx: Context, directory: str, name: str = None, private: bo
         logger.addHandler(mcp_handler)
         
         logger.info(f"MCP call received - Parameters: directory='{directory}', name='{name}', private={private}")
-        logger.info(f"Starting to upload directory: {directory} to GitHub...")
+        
+        # Send initial progress update to client
+        ctx.report_progress("Starting to upload to GitHub...")
+        time.sleep(0.5)  # Give client some time to display initial message
         
         # Load environment variables
         load_dotenv()
@@ -144,12 +148,15 @@ def upload_to_github(ctx: Context, directory: str, name: str = None, private: bo
         if not github_token:
             error_msg = "GITHUB_TOKEN environment variable not set, please set GITHUB_TOKEN=your_token in .env file"
             logger.error(error_msg)
+            ctx.report_progress("Error: GitHub token not set")
             return {
                 "success": False,
                 "error": error_msg,
                 "logs": mcp_handler.log_buffer
             }
 
+        ctx.report_progress("GitHub token verification successful")
+        
         # Normalize path for cross-platform compatibility
         try:
             # Convert to Path object and resolve to absolute path
@@ -159,6 +166,7 @@ def upload_to_github(ctx: Context, directory: str, name: str = None, private: bo
             if not directory_path.exists():
                 error_msg = f"Directory {directory_path} does not exist"
                 logger.error(error_msg)
+                ctx.report_progress(f"Error: Directory {directory_path} does not exist")
                 return {
                     "success": False,
                     "error": error_msg,
@@ -168,10 +176,12 @@ def upload_to_github(ctx: Context, directory: str, name: str = None, private: bo
             # Convert back to string using os.path.normpath for consistent path format
             directory = str(directory_path)
             logger.info(f"Normalized directory path: {directory}")
+            ctx.report_progress(f"Directory path validation successful: {directory}")
             
         except Exception as e:
             error_msg = f"Error processing directory path: {str(e)}"
             logger.error(error_msg)
+            ctx.report_progress(f"Error: Failed to process directory path")
             return {
                 "success": False,
                 "error": error_msg,
@@ -183,29 +193,38 @@ def upload_to_github(ctx: Context, directory: str, name: str = None, private: bo
         logger.info(f"Using repository name: {repo_name}")
         
         # Check if Git is installed
+        ctx.report_progress("Checking Git installation...")
         if not check_git_installed():
             error_msg = "Please install Git first"
             logger.error("Git not installed")
+            ctx.report_progress("Error: Git not installed")
             return {
                 "success": False,
                 "error": error_msg,
                 "logs": mcp_handler.log_buffer
             }
+        ctx.report_progress("Git installation check passed")
 
         # Initialize Git repository
+        ctx.report_progress("Initializing Git repository...")
         if not init_git_repo(directory):
             error_msg = "Failed to initialize Git repository"
             logger.error(error_msg)
+            ctx.report_progress("Error: Failed to initialize Git repository")
             return {
                 "success": False,
                 "error": error_msg,
                 "logs": mcp_handler.log_buffer
             }
+        ctx.report_progress("Git repository initialization complete")
 
         # Create GitHub repository and push code
+        ctx.report_progress("Creating GitHub repository and pushing code...")
+        repo_name = name if name else directory_path.name
         if create_github_repo(github_token, repo_name, directory, private):
             success_msg = f"Code successfully pushed to GitHub! Repository name: {repo_name}"
             logger.info(success_msg)
+            ctx.report_progress("Success: Code has been pushed to GitHub!")
             return {
                 "success": True,
                 "message": success_msg,
@@ -215,6 +234,7 @@ def upload_to_github(ctx: Context, directory: str, name: str = None, private: bo
         else:
             error_msg = "Failed to create or push to GitHub repository"
             logger.error(error_msg)
+            ctx.report_progress("Error: Failed to create or push to GitHub repository")
             return {
                 "success": False,
                 "error": error_msg,

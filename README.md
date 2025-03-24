@@ -10,9 +10,12 @@ A powerful tool for automatically uploading local projects to GitHub. Supports b
 - 🛠️ MCP integration with Cursor IDE
 - 📝 Detailed logging and error handling
 - 🌐 Environment variable based configuration
+- ⚡ Fast and reliable performance
+- 🔧 Easy configuration
 
 ## Prerequisites
 
+Before you begin, ensure you have:
 - Python 3.6+
 - Git installed and configured
 - GitHub account and personal access token
@@ -41,15 +44,15 @@ GITHUB_TOKEN=your_github_personal_access_token
 
 ### Command Line Interface
 
-Upload a project directory to GitHub:
 ```bash
-python project2github.py /path/to/your/project --name optional-repo-name --private
+python project2github.py /path/to/your/project [--name REPO_NAME] [--private]
 ```
 
 Options:
 - `directory`: Path to the local directory to upload (required)
 - `--name`: Custom repository name (optional, defaults to directory name)
 - `--private`: Create a private repository (optional, defaults to true)
+- `--help`: Show help message and exit
 
 ### Cursor IDE Integration (MCP)
 
@@ -79,11 +82,12 @@ The tool maintains detailed logs in `github_mcp.log` for troubleshooting and mon
 
 ## Error Handling
 
-- Validates Git installation
-- Checks for valid GitHub token
-- Verifies directory existence
-- Handles Git initialization and push errors
-- Provides detailed error messages and logging
+The tool includes comprehensive error handling:
+- ✓ Validates Git installation and configuration
+- ✓ Checks for valid GitHub token
+- ✓ Verifies directory existence and permissions
+- ✓ Handles Git initialization and push errors
+- ✓ Provides detailed error messages and logging
 
 ## Contributing
 
