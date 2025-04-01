@@ -130,15 +130,23 @@ def upload_to_github(ctx: Context, directory: str, name: str = None, private: bo
         name: GitHub repository name (defaults to directory name)
         private: Whether to create a private repository, defaults to True
     """
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    
     try:
-        # Setup MCP log handler to capture logs
-        mcp_handler = MCPLogHandler()
-        logger.addHandler(mcp_handler)
-        
         logger.info(f"MCP call received - Parameters: directory='{directory}', name='{name}', private={private}")
         
+        # 检查 ctx 是否为空
+        if ctx is None:
+            logger.info("Starting to upload to GitHub...")
+        else:
+            if hasattr(ctx, 'report_progress'):
+                ctx.report_progress("Starting to upload to GitHub...")
+            else:
+                raise AttributeError("Context object (ctx) does not have 'report_progress' method")
+        
         # Send initial progress update to client
-        ctx.report_progress("Starting to upload to GitHub...")
         time.sleep(0.5)  # Give client some time to display initial message
         
         # Load environment variables
@@ -148,14 +156,16 @@ def upload_to_github(ctx: Context, directory: str, name: str = None, private: bo
         if not github_token:
             error_msg = "GITHUB_TOKEN environment variable not set, please set GITHUB_TOKEN=your_token in .env file"
             logger.error(error_msg)
-            ctx.report_progress("Error: GitHub token not set")
+            if ctx is not None:
+                ctx.report_progress("Error: GitHub token not set")
             return {
                 "success": False,
                 "error": error_msg,
-                "logs": mcp_handler.log_buffer
+                "logs": []
             }
 
-        ctx.report_progress("GitHub token verification successful")
+        if ctx is not None:
+            ctx.report_progress("GitHub token verification successful")
         
         # Normalize path for cross-platform compatibility
         try:
@@ -166,26 +176,29 @@ def upload_to_github(ctx: Context, directory: str, name: str = None, private: bo
             if not directory_path.exists():
                 error_msg = f"Directory {directory_path} does not exist"
                 logger.error(error_msg)
-                ctx.report_progress(f"Error: Directory {directory_path} does not exist")
+                if ctx is not None:
+                    ctx.report_progress(f"Error: Directory {directory_path} does not exist")
                 return {
                     "success": False,
                     "error": error_msg,
-                    "logs": mcp_handler.log_buffer
+                    "logs": []
                 }
                 
             # Convert back to string using os.path.normpath for consistent path format
             directory = str(directory_path)
             logger.info(f"Normalized directory path: {directory}")
-            ctx.report_progress(f"Directory path validation successful: {directory}")
+            if ctx is not None:
+                ctx.report_progress(f"Directory path validation successful: {directory}")
             
         except Exception as e:
             error_msg = f"Error processing directory path: {str(e)}"
             logger.error(error_msg)
-            ctx.report_progress(f"Error: Failed to process directory path")
+            if ctx is not None:
+                ctx.report_progress(f"Error: Failed to process directory path")
             return {
                 "success": False,
                 "error": error_msg,
-                "logs": mcp_handler.log_buffer
+                "logs": []
             }
 
         # Get repository name
@@ -193,52 +206,61 @@ def upload_to_github(ctx: Context, directory: str, name: str = None, private: bo
         logger.info(f"Using repository name: {repo_name}")
         
         # Check if Git is installed
-        ctx.report_progress("Checking Git installation...")
+        if ctx is not None:
+            ctx.report_progress("Checking Git installation...")
         if not check_git_installed():
             error_msg = "Please install Git first"
             logger.error("Git not installed")
-            ctx.report_progress("Error: Git not installed")
+            if ctx is not None:
+                ctx.report_progress("Error: Git not installed")
             return {
                 "success": False,
                 "error": error_msg,
-                "logs": mcp_handler.log_buffer
+                "logs": []
             }
-        ctx.report_progress("Git installation check passed")
+        if ctx is not None:
+            ctx.report_progress("Git installation check passed")
 
         # Initialize Git repository
-        ctx.report_progress("Initializing Git repository...")
+        if ctx is not None:
+            ctx.report_progress("Initializing Git repository...")
         if not init_git_repo(directory):
             error_msg = "Failed to initialize Git repository"
             logger.error(error_msg)
-            ctx.report_progress("Error: Failed to initialize Git repository")
+            if ctx is not None:
+                ctx.report_progress("Error: Failed to initialize Git repository")
             return {
                 "success": False,
                 "error": error_msg,
-                "logs": mcp_handler.log_buffer
+                "logs": []
             }
-        ctx.report_progress("Git repository initialization complete")
+        if ctx is not None:
+            ctx.report_progress("Git repository initialization complete")
 
         # Create GitHub repository and push code
-        ctx.report_progress("Creating GitHub repository and pushing code...")
+        if ctx is not None:
+            ctx.report_progress("Creating GitHub repository and pushing code...")
         repo_name = name if name else directory_path.name
         if create_github_repo(github_token, repo_name, directory, private):
             success_msg = f"Code successfully pushed to GitHub! Repository name: {repo_name}"
             logger.info(success_msg)
-            ctx.report_progress("Success: Code has been pushed to GitHub!")
+            if ctx is not None:
+                ctx.report_progress("Success: Code has been pushed to GitHub!")
             return {
                 "success": True,
                 "message": success_msg,
                 "repo_name": repo_name,
-                "logs": mcp_handler.log_buffer
+                "logs": []
             }
         else:
             error_msg = "Failed to create or push to GitHub repository"
             logger.error(error_msg)
-            ctx.report_progress("Error: Failed to create or push to GitHub repository")
+            if ctx is not None:
+                ctx.report_progress("Error: Failed to create or push to GitHub repository")
             return {
                 "success": False,
                 "error": error_msg,
-                "logs": mcp_handler.log_buffer
+                "logs": []
             }
             
     except Exception as e:
@@ -246,12 +268,8 @@ def upload_to_github(ctx: Context, directory: str, name: str = None, private: bo
         return {
             "success": False,
             "error": str(e),
-            "logs": mcp_handler.log_buffer if 'mcp_handler' in locals() else []
+            "logs": []
         }
-    finally:
-        # Remove the MCP handler to avoid duplicate logs in future calls
-        if 'mcp_handler' in locals():
-            logger.removeHandler(mcp_handler)
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "--mcp":
@@ -265,7 +283,7 @@ def main():
         parser = argparse.ArgumentParser(description='Upload local directory to GitHub')
         parser.add_argument('directory', help='Path to local directory to upload')
         parser.add_argument('--name', help='GitHub repository name (defaults to directory name)')
-        parser.add_argument('--private', action='store_true', help='Create private repository')
+        parser.add_argument('--private', action='store_true', default=True, help='Create private repository')
         args = parser.parse_args()
 
         result = upload_to_github(None, args.directory, args.name, args.private)
